@@ -138,4 +138,4 @@ Denis: [den.kulik.05@inbox.ru]
 
 Second Pair of Eyes — Because one pair of eyes cannot always catch everything
 
-Made with ❤️ in Kaliningrad and Minsk for Harvard Health Systems Innovation Lab Hackathon 2026
+Made with ❤️ in Kaliningrad and Gomel for Harvard Health Systems Innovation Lab Hackathon 2026
