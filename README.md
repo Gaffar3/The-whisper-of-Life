@@ -26,7 +26,7 @@
 
 ### Установка
 
-1. **Клонируйте репозиторий**
+1.
 ```bash
 git clone https://github.com/yourusername/second-pair-of-eyes.git
 cd second-pair-of-eyes
