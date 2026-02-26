@@ -1,0 +1,250 @@
+# Модуль расчета ранней оценки ухудшения состояния (Early Warning Score)
+# Основан на стандарте NEWS2 (National Early Warning Score 2) [citation:1][citation:9]
+
+import numpy as np
+from datetime import datetime, timedelta
+
+class EWSCalculator:
+    """
+    Калькулятор системы раннего предупреждения для отделений реанимации
+    """
+    
+    def __init__(self):
+        # Пороговые значения для разных уровней риска
+        self.thresholds = {
+            'low': 3,
+            'medium': 5,
+            'high': 7
+        }
+        
+        # История измерений для отслеживания динамики
+        self.patient_history = {}
+    
+    def calculate_ews(self, vital_signs):
+        """
+        Расчет Early Warning Score на основе витальных показателей
+        
+        Параметры:
+            vital_signs (dict): Словарь с показателями:
+                - hr: пульс (уд/мин)
+                - sbp: систолическое давление (mmHg)
+                - rr: частота дыхания (в мин)
+                - temp: температура (°C)
+                - spo2: сатурация (%)
+                - o2: кислородная поддержка (0/1)
+                - avpu: уровень сознания (alert/voice/pain/unresponsive)
+        """
+        score = 0
+        alerts = []
+        
+        # 1. Оценка пульса (Heart Rate)
+        hr = vital_signs.get('hr', 0)
+        if hr <= 40:
+            score += 3
+            alerts.append("⚠️ Критически низкий пульс (брадикардия)")
+        elif 41 <= hr <= 50:
+            score += 1
+            alerts.append("ℹ️ Пульс ниже нормы")
+        elif 51 <= hr <= 90:
+            score += 0  # Норма
+        elif 91 <= hr <= 110:
+            score += 1
+            alerts.append("ℹ️ Пульс выше нормы")
+        elif 111 <= hr <= 130:
+            score += 2
+            alerts.append("⚠️ Тахикардия")
+        elif hr >= 131:
+            score += 3
+            alerts.append("🚨 Критическая тахикардия")
+        
+        # 2. Оценка сатурации (SpO2)
+        spo2 = vital_signs.get('spo2', 0)
+        o2_therapy = vital_signs.get('o2', 0)
+        
+        if o2_therapy == 0:  # Без кислорода
+            if spo2 <= 91:
+                score += 3
+                alerts.append("🚨 Критически низкая сатурация, требуется кислород")
+            elif 92 <= spo2 <= 93:
+                score += 2
+                alerts.append("⚠️ Опасно низкая сатурация")
+            elif 94 <= spo2 <= 95:
+                score += 1
+                alerts.append("ℹ️ Сатурация ниже нормы")
+        else:  # На кислороде
+            if spo2 <= 91:
+                score += 3
+                alerts.append("🚨 Критически низкая сатурация на фоне кислородной поддержки")
+            elif 92 <= spo2 <= 93:
+                score += 2
+                alerts.append("⚠️ Недостаточный эффект оксигенотерапии")
+            elif 94 <= spo2 <= 96:
+                score += 1
+                alerts.append("ℹ️ Сатурация не достигает целевых значений")
+        
+        # 3. Оценка систолического давления
+        sbp = vital_signs.get('sbp', 0)
+        if sbp <= 90:
+            score += 3
+            alerts.append("🚨 Критическая гипотензия, риск шока")
+        elif 91 <= sbp <= 100:
+            score += 2
+            alerts.append("⚠️ Выраженная гипотензия")
+        elif 101 <= sbp <= 110:
+            score += 1
+            alerts.append("ℹ️ Тенденция к гипотензии")
+        elif 111 <= sbp <= 219:
+            score += 0  # Норма
+        elif sbp >= 220:
+            score += 3
+            alerts.append("🚨 Гипертонический криз")
+        
+        # 4. Оценка частоты дыхания
+        rr = vital_signs.get('rr', 0)
+        if rr <= 8:
+            score += 3
+            alerts.append("🚨 Критическое урежение дыхания, риск остановки")
+        elif 9 <= rr <= 11:
+            score += 1
+            alerts.append("ℹ️ Брадипноэ")
+        elif 12 <= rr <= 20:
+            score += 0  # Норма
+        elif 21 <= rr <= 24:
+            score += 2
+            alerts.append("⚠️ Тахипноэ")
+        elif rr >= 25:
+            score += 3
+            alerts.append("🚨 Выраженное тахипноэ, риск дыхательной недостаточности")
+        
+        # 5. Оценка температуры
+        temp = vital_signs.get('temp', 0)
+        if temp <= 35.0:
+            score += 3
+            alerts.append("🚨 Критическая гипотермия")
+        elif 35.1 <= temp <= 36.0:
+            score += 1
+            alerts.append("ℹ️ Субнормальная температура")
+        elif 36.1 <= temp <= 38.0:
+            score += 0  # Норма
+        elif 38.1 <= temp <= 39.0:
+            score += 1
+            alerts.append("ℹ️ Лихорадка")
+        elif temp >= 39.1:
+            score += 2
+            alerts.append("⚠️ Высокая лихорадка")
+        
+        # 6. Оценка уровня сознания (AVPU)
+        avpu = vital_signs.get('avpu', 'alert')
+        if avpu != 'alert':
+            score += 3
+            alerts.append("🚨 Нарушение сознания, требует немедленной оценки")
+        
+        # Определение уровня риска
+        if score >= self.thresholds['high']:
+            risk_level = "КРИТИЧЕСКИЙ"
+            color = "red"
+            action = "🚨 НЕМЕДЛЕННО вызвать врача реаниматолога! Подготовить к переводу в ICU"
+        elif score >= self.thresholds['medium']:
+            risk_level = "ВЫСОКИЙ"
+            color = "orange"
+            action = "⚠️ Срочный осмотр врача в ближайшие 30 минут. Усилить мониторинг"
+        elif score >= self.thresholds['low']:
+            risk_level = "СРЕДНИЙ"
+            color = "yellow"
+            action = "ℹ️ Повышенное внимание. Повторная оценка через 1 час"
+        else:
+            risk_level = "НИЗКИЙ"
+            color = "green"
+            action = "✅ Плановое наблюдение. Повторная оценка через 4-6 часов"
+        
+        # Формирование результата
+        result = {
+            "score": score,
+            "risk_level": risk_level,
+            "color": color,
+            "action": action,
+            "alerts": alerts,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        return result
+    
+    def calculate_trend(self, patient_id, new_measurement):
+        """
+        Анализ динамики показателей пациента
+        """
+        if patient_id not in self.patient_history:
+            self.patient_history[patient_id] = []
+        
+        history = self.patient_history[patient_id]
+        history.append({
+            'timestamp': datetime.now(),
+            'score': new_measurement['score']
+        })
+        
+        # Оставляем только последние 24 часа
+        cutoff = datetime.now() - timedelta(hours=24)
+        self.patient_history[patient_id] = [m for m in history if m['timestamp'] > cutoff]
+        
+        # Анализ тренда
+        if len(self.patient_history[patient_id]) >= 3:
+            scores = [m['score'] for m in self.patient_history[patient_id][-3:]]
+            if scores[-1] > scores[0] and scores[-1] - scores[0] >= 2:
+                return {
+                    'trend': 'ухудшение',
+                    'message': f'⚠️ Тревога! За последние 3 измерения сумма баллов выросла на {scores[-1] - scores[0]}'
+                }
+            elif scores[-1] < scores[0] and scores[0] - scores[-1] >= 2:
+                return {
+                    'trend': 'улучшение',
+                    'message': f'✅ Позитивная динамика: снижение риска на {scores[0] - scores[-1]} баллов'
+                }
+        
+        return {'trend': 'стабильно', 'message': 'Динамика без изменений'}
+
+
+# Класс для демонстрационных данных
+class DemoDataGenerator:
+    """Генератор демонстрационных данных для презентации"""
+    
+    @staticmethod
+    def generate_patient_case(severity='normal'):
+        """Генерация тестового случая пациента"""
+        
+        cases = {
+            'normal': {
+                'name': 'Иванов И.И.',
+                'room': '302',
+                'hr': 72,
+                'sbp': 118,
+                'rr': 16,
+                'temp': 36.6,
+                'spo2': 98,
+                'o2': 0,
+                'avpu': 'alert'
+            },
+            'warning': {
+                'name': 'Петров П.П.',
+                'room': '305',
+                'hr': 102,
+                'sbp': 100,
+                'rr': 22,
+                'temp': 38.2,
+                'spo2': 94,
+                'o2': 0,
+                'avpu': 'alert'
+            },
+            'critical': {
+                'name': 'Сидоров С.С.',
+                'room': '310',
+                'hr': 128,
+                'sbp': 85,
+                'rr': 28,
+                'temp': 39.5,
+                'spo2': 88,
+                'o2': 1,
+                'avpu': 'voice'
+            }
+        }
+        
+        return cases.get(severity, cases['normal'])
