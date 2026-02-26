@@ -1,0 +1,659 @@
+html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Second Pair of Eyes — ICU Early Warning System</title>
+    
+    <!-- Fonts and Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* Header */
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 25px 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-left: 5px solid #0066cc;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo i {
+            font-size: 2.5rem;
+            color: #0066cc;
+        }
+        
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+        
+        .logo span {
+            color: #666;
+            font-size: 0.9rem;
+            margin-left: 10px;
+            font-weight: 400;
+        }
+        
+        .team-badge {
+            background: #e8f0fe;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 500;
+            color: #0066cc;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .team-badge i {
+            font-size: 1rem;
+        }
+        
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .card-header i {
+            font-size: 1.5rem;
+            color: #0066cc;
+        }
+        
+        .card-header h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        /* Form */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+            font-size: 0.9rem;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            border-color: #0066cc;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+        }
+        
+        .form-group input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        
+        .form-group input[type="number"]::-webkit-outer-spin-button,
+        .form-group input[number]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        .btn {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            background: #0052a3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,102,204,0.3);
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        /* Result Card */
+        .result-card {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            transition: all 0.3s;
+        }
+        
+        .risk-critical { background: #f8d7da; border-left: 5px solid #dc3545; }
+        .risk-high { background: #fff3cd; border-left: 5px solid #fd7e14; }
+        .risk-medium { background: #fff3cd; border-left: 5px solid #ffc107; }
+        .risk-low { background: #d4edda; border-left: 5px solid #28a745; }
+        
+        .score-badge {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        
+        .alerts-list {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 10px;
+        }
+        
+        .alert-item {
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            background: white;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        
+        /* Dashboard */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0066cc;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        /* Patient Cases */
+        .cases-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        
+        .case-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .case-card:hover {
+            border-color: #0066cc;
+            transform: translateY(-3px);
+        }
+        
+        .case-card.normal { border-left: 5px solid #28a745; }
+        .case-card.warning { border-left: 5px solid #ffc107; }
+        .case-card.critical { border-left: 5px solid #dc3545; }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .cases-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-eye"></i>
+                <div>
+                    <h1>Second Pair of Eyes <span>v1.0</span></h1>
+                    <p style="color: #666; margin-top: 5px;">ICU Early Warning System</p>
+                </div>
+            </div>
+            <div class="team-badge">
+                <i class="fas fa-heart" style="color: #ff4444;"></i>
+                Гера & Денис · Россия · Беларусь
+                <i class="fas fa-map-marker-alt" style="margin-left: 8px;"></i>
+            </div>
+        </div>
+        
+        <!-- Statistics Dashboard -->
+        <div class="stats-grid" id="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="total-assessments">0</div>
+                <div class="stat-label">Всего оценок</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="critical-count" style="color: #dc3545;">0</div>
+                <div class="stat-label">Критических</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="high-count" style="color: #fd7e14;">0</div>
+                <div class="stat-label">Высокий риск</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="medium-count" style="color: #ffc107;">0</div>
+                <div class="stat-label">Средний риск</div>
+            </div>
+        </div>
+        
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Assessment Form -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-notes-medical"></i>
+                    <h2>Оценка состояния пациента</h2>
+                </div>
+                
+                <form id="assessmentForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label><i class="fas fa-id-card"></i> ID пациента</label>
+                            <input type="text" id="patient-id" value="ICU-302" placeholder="Напр. ICU-302">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="fas fa-procedures"></i> Палата</label>
+                            <input type="text" id="room" value="302" placeholder="№ палаты">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="fas fa-heartbeat"></i> Пульс (уд/мин)</label>
+                            <input type="number" id="hr" value="72" min="20" max="220">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="fas fa-heart"></i> Давление сист. (mmHg)</label>
+                            <input type="number" id="sbp" value="118" min="40" max="250">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="fas fa-lungs"></i> Частота дыхания</label>
+                            <input type="number" id="rr" value="16" min="4" max="60">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="fas fa-thermometer-half"></i> Температура (°C)</label>
+                            <input type="number" id="temp" value="36.6" min="32" max="42" step="0.1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="fas fa-wind"></i> Сатурация SpO2 (%)</label>
+                            <input type="number" id="spo2" value="98" min="50" max="100">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="fas fa-lungs"></i> Кислородная поддержка</label>
+                            <select id="o2">
+                                <option value="0">Нет</option>
+                                <option value="1">Да</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="fas fa-brain"></i> Уровень сознания</label>
+                            <select id="avpu">
+                                <option value="alert">Alert (ясное)</option>
+                                <option value="voice">Voice (реакция на голос)</option>
+                                <option value="pain">Pain (реакция на боль)</option>
+                                <option value="unresponsive">Unresponsive (без сознания)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button type="submit" class="btn">
+                            <i class="fas fa-calculator"></i> Оценить риск
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="resetBtn">
+                            <i class="fas fa-undo"></i> Сброс
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Result Display -->
+                <div id="result" style="display: none;"></div>
+            </div>
+            
+            <!-- Patient Cases -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-hospital-user"></i>
+                    <h2>Демонстрационные случаи</h2>
+                </div>
+                
+                <p style="color: #666; margin-bottom: 15px;">
+                    Нажмите на карточку, чтобы загрузить данные пациента
+                </p>
+                
+                <div class="cases-grid">
+                    <div class="case-card normal" onclick="loadDemoCase('normal')">
+                        <i class="fas fa-smile" style="color: #28a745; font-size: 1.5rem;"></i>
+                        <h3 style="margin: 10px 0;">Норма</h3>
+                        <p style="color: #666; font-size: 0.9rem;">Петров, 302 палата</p>
+                        <p style="color: #28a745; margin-top: 5px;">✅ Стабилен</p>
+                    </div>
+                    
+                    <div class="case-card warning" onclick="loadDemoCase('warning')">
+                        <i class="fas fa-meh" style="color: #ffc107; font-size: 1.5rem;"></i>
+                        <h3 style="margin: 10px 0;">Средний риск</h3>
+                        <p style="color: #666; font-size: 0.9rem;">Иванов, 305 палата</p>
+                        <p style="color: #ffc107; margin-top: 5px;">⚠️ Требует внимания</p>
+                    </div>
+                    
+                    <div class="case-card critical" onclick="loadDemoCase('critical')">
+                        <i class="fas fa-frown" style="color: #dc3545; font-size: 1.5rem;"></i>
+                        <h3 style="margin: 10px 0;">Критический</h3>
+                        <p style="color: #666; font-size: 0.9rem;">Сидоров, 310 палата</p>
+                        <p style="color: #dc3545; margin-top: 5px;">🚨 Срочно!</p>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                    <p style="font-style: italic; color: #555;">
+                        <i class="fas fa-quote-left" style="color: #0066cc;"></i>
+                        Каждую неделю я вижу пациентов, которых привозят к нам из обычных отделений, 
+                        когда уже слишком поздно. Этот проект — способ дать медсестрам вторую пару глаз.
+                    </p>
+                    <p style="text-align: right; margin-top: 10px; color: #0066cc;">— Гера, медсестра ICU</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- History and Timeline -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-line"></i>
+                <h2>Динамика состояния пациента</h2>
+            </div>
+            
+            <div id="history-graph" style="height: 300px; display: flex; align-items: center; justify-content: center;">
+                <p style="color: #999;">Выполните оценку, чтобы увидеть динамику</p>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>Second Pair of Eyes © 2026 | Разработано с ❤️ в Калининграде и Минске</p>
+            <p style="margin-top: 5px; font-size: 0.8rem;">Для хакатона Harvard Health Systems Innovation Lab 2026</p>
+        </div>
+    </div>
+    
+    <script>
+        // Глобальные переменные
+        let currentPatientId = 'ICU-302';
+        let assessments = [];
+        
+        // Загрузка демо-случая
+        async function loadDemoCase(caseType) {
+            try {
+                const response = await fetch(`/api/demo/${caseType}`);
+                const data = await response.json();
+                
+                document.getElementById('patient-id').value = data.name || 'ICU-' + data.room;
+                document.getElementById('room').value = data.room || '302';
+                document.getElementById('hr').value = data.hr || 72;
+                document.getElementById('sbp').value = data.sbp || 118;
+                document.getElementById('rr').value = data.rr || 16;
+                document.getElementById('temp').value = data.temp || 36.6;
+                document.getElementById('spo2').value = data.spo2 || 98;
+                document.getElementById('o2').value = data.o2 || 0;
+                document.getElementById('avpu').value = data.avpu || 'alert';
+                
+                // Автоматически оценить
+                setTimeout(() => {
+                    document.getElementById('assessmentForm').dispatchEvent(
+                        new Event('submit', { cancelable: true })
+                    );
+                }, 100);
+                
+            } catch (error) {
+                console.error('Error loading demo case:', error);
+            }
+        }
+        
+        // Обработка формы
+        document.getElementById('assessmentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const patientId = document.getElementById('patient-id').value || 'unknown';
+            
+            const data = {
+                patient_id: patientId,
+                hr: parseInt(document.getElementById('hr').value) || 0,
+                sbp: parseInt(document.getElementById('sbp').value) || 0,
+                rr: parseInt(document.getElementById('rr').value) || 0,
+                temp: parseFloat(document.getElementById('temp').value) || 0,
+                spo2: parseInt(document.getElementById('spo2').value) || 0,
+                o2: parseInt(document.getElementById('o2').value) || 0,
+                avpu: document.getElementById('avpu').value || 'alert'
+            };
+            
+            try {
+                const response = await fetch('/api/assess', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayResult(result.assessment);
+                    loadHistory(patientId);
+                    loadStats();
+                }
+                
+            } catch (error) {
+                alert('Ошибка при оценке: ' + error.message);
+            }
+        });
+        
+        // Отображение результата
+        function displayResult(assessment) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            
+            // Определяем класс цвета
+            let colorClass = '';
+            if (assessment.color === 'red') colorClass = 'risk-critical';
+            else if (assessment.color === 'orange') colorClass = 'risk-high';
+            else if (assessment.color === 'yellow') colorClass = 'risk-medium';
+            else colorClass = 'risk-low';
+            
+            // Формируем список предупреждений
+            let alertsHtml = '';
+            if (assessment.alerts && assessment.alerts.length > 0) {
+                alertsHtml = '<div class="alerts-list"><h4>⚠️ Обнаруженные проблемы:</h4>';
+                assessment.alerts.forEach(alert => {
+                    alertsHtml += `<div class="alert-item">${alert}</div>`;
+                });
+                alertsHtml += '</div>';
+            }
+            
+            // Добавляем тренд
+            let trendHtml = '';
+            if (assessment.trend) {
+                trendHtml = `<p style="margin-top: 10px;"><strong>Тренд:</strong> ${assessment.trend.message}</p>`;
+            }
+            
+            resultDiv.className = `result-card ${colorClass}`;
+            resultDiv.innerHTML = `
+                <h3>Результат оценки</h3>
+                <div class="score-badge">${assessment.score} баллов</div>
+                <p><strong>Уровень риска:</strong> ${assessment.risk_level}</p>
+                <p><strong>Рекомендация:</strong> ${assessment.action}</p>
+                ${trendHtml}
+                ${alertsHtml}
+            `;
+        }
+        
+        // Загрузка истории
+        async function loadHistory(patientId) {
+            try {
+                const response = await fetch(`/api/history/${patientId}`);
+                const data = await response.json();
+                
+                if (data.graph) {
+                    // В реальном приложении здесь рендеринг графика Plotly
+                    document.getElementById('history-graph').innerHTML = 
+                        '<p style="color: #0066cc;">✓ История загружена. В полной версии здесь будет график динамики.</p>';
+                }
+                
+            } catch (error) {
+                console.error('Error loading history:', error);
+            }
+        }
+        
+        // Загрузка статистики
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const stats = await response.json();
+                
+                document.getElementById('total-assessments').textContent = stats.total;
+                document.getElementById('critical-count').textContent = stats.critical;
+                document.getElementById('high-count').textContent = stats.high;
+                document.getElementById('medium-count').textContent = stats.medium;
+                
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+        
+        // Сброс формы
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            document.getElementById('hr').value = '72';
+            document.getElementById('sbp').value = '118';
+            document.getElementById('rr').value = '16';
+            document.getElementById('temp').value = '36.6';
+            document.getElementById('spo2').value = '98';
+            document.getElementById('o2').value = '0';
+            document.getElementById('avpu').value = 'alert';
+            document.getElementById('result').style.display = 'none';
+        });
+        
+        // Загрузка начальной статистики
+        loadStats();
+        
+        // Загрузка демо-случая при старте
+        window.onload = () => {
+            setTimeout(() => loadDemoCase('normal'), 500);
+        };
+    </script>
+</body>
+</html>
